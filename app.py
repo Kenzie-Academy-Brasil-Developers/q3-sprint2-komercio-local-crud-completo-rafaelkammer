@@ -1,4 +1,7 @@
-# Seu código aqui
+from flask import Flask, request, jsonify;
+
+app = Flask(__name__)
+
 produtos = [
     {"id": 1, "name": "sabonete", "price": 5.99},
     {"id": 2, "name": "perfume", "price": 39.90},
@@ -31,3 +34,38 @@ produtos = [
     {"id": 29, "name": "coberta", "price": 55.99},
     {"id": 30, "name": "sofa", "price": 600.15}
 ]
+
+@app.get('/products')
+def list_all_products():
+
+    return jsonify(produtos), 200
+
+@app.get('/products/<product_id>')
+def get_product(product_id: int):
+
+    return [prd for prd in produtos if prd['id'] == int(product_id)][0], 200
+
+@app.post('/products')
+def create_new_product():
+    data = request.get_json()
+    data['id'] = len(produtos) + 1
+    produtos.append(data)
+
+    return data, 201
+
+@app.route('/products/<product_id>', methods=['PATCH', 'PUT'])
+def update_product(product_id: int):
+    data = request.get_json()
+
+    if data.get('name'):
+        produtos[int(product_id) - 1]['name'] = data.get('name')
+    if data.get('price'):
+        produtos[int(product_id) - 1]['price'] = data.get('price')
+    
+    return '', 204
+
+@app.delete('/products/<product_id>')
+def delete_product(product_id: int):
+    produtos.pop(int(product_id) - 1)
+
+    return '', 204
